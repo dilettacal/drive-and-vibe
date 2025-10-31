@@ -35,4 +35,3 @@ For more information, see: https://www.microsoft.com/en-us/research/publication/
 ## License
 
 The Geolife dataset is provided by Microsoft Research. Please refer to their terms of use.
-

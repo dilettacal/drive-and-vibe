@@ -56,4 +56,3 @@ When reporting bugs or requesting features:
 ## Questions?
 
 Open an issue with the `question` label for help or clarification.
-

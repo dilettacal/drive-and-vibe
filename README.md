@@ -72,7 +72,7 @@ drive-and-vibe/
    make install
    # or manually: uv sync
    ```
-   
+
    This will create a virtual environment managed by UV and install all dependencies.
 
 3. **Set up pre-commit hooks** (optional):
@@ -248,4 +248,3 @@ See LICENSE file for details.
 ---
 
 **Made with ☕ and good vibes** 🚗
-

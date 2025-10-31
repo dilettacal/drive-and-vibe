@@ -3,11 +3,11 @@
 Download and extract the Geolife GPS trajectory dataset.
 """
 
+import logging
+import shutil
 import subprocess
 import zipfile
-import shutil
 from pathlib import Path
-import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -19,16 +19,13 @@ DATA_DIR = Path(__file__).parent.parent / "data"
 
 def download_file_curl(url: str, output_path: Path) -> None:
     """Download a file from URL using curl."""
-    logger.info(f"Downloading Geolife dataset from Kaggle...")
-    logger.info(f"This may take several minutes (dataset is ~200MB)...")
-    
+    logger.info("Downloading Geolife dataset from Kaggle...")
+    logger.info("This may take several minutes (dataset is ~200MB)...")
+
     try:
         # Use curl to download
-        result = subprocess.run(
-            ["curl", "-L", "-o", str(output_path), url],
-            check=True,
-            capture_output=True,
-            text=True
+        subprocess.run(
+            ["curl", "-L", "-o", str(output_path), url], check=True, capture_output=True, text=True
         )
         logger.info(f"Download complete: {output_path}")
     except subprocess.CalledProcessError as e:
@@ -78,19 +75,19 @@ def main():
         DATA_DIR / "geolife-dataset",
         DATA_DIR / "microsoft-geolife-gps-trajectory-dataset",
     ]
-    
+
     extracted = None
     for name in possible_names:
         if name.exists():
             extracted = name
             break
-    
+
     if extracted and extracted != geolife_dir:
         logger.info(f"Moving extracted data from {extracted.name} to geolife/")
         if geolife_dir.exists():
             shutil.rmtree(geolife_dir)
         extracted.rename(geolife_dir)
-    
+
     # Check if extraction was successful
     plt_files = list(geolife_dir.glob("**/*.plt"))
     if plt_files:
@@ -103,4 +100,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

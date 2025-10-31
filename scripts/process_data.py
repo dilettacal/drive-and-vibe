@@ -12,13 +12,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import pandas as pd
-from tqdm import tqdm
+
 from src.geo_utils import (
+    calculate_speed_acceleration,
+    compute_trip_duration_distance,
+    filter_unrealistic_data,
     load_all_trajectories,
     load_plt_file,
-    calculate_speed_acceleration,
-    filter_unrealistic_data,
-    compute_trip_duration_distance,
 )
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -28,13 +28,13 @@ logger = logging.getLogger(__name__)
 def load_sample_trajectories(data_dir: Path, n_files: int) -> pd.DataFrame:
     """Load only a sample of trajectory files for faster processing."""
     plt_files = list(data_dir.rglob("*.plt"))
-    
+
     if n_files >= len(plt_files):
         return load_all_trajectories(data_dir)
-    
+
     logger.info(f"Loading sample of {n_files} files from {len(plt_files)} total files...")
     sample_files = plt_files[:n_files]
-    
+
     all_data = []
     for filepath in sample_files:
         try:
@@ -47,10 +47,10 @@ def load_sample_trajectories(data_dir: Path, n_files: int) -> pd.DataFrame:
         except Exception as e:
             logger.warning(f"Failed to load {filepath}: {e}")
             continue
-    
+
     if not all_data:
         raise ValueError("No trajectory files found")
-    
+
     df_all = pd.concat(all_data, ignore_index=True)
     logger.info(f"Loaded {len(df_all)} total points from {len(all_data)} files")
     return df_all
@@ -114,14 +114,16 @@ def process_geolife_data(
     logger.info(f"Total GPS points:     {len(df):,}")
     logger.info(f"Unique users:         {df['user_id'].nunique()}")
     logger.info(f"Unique trajectories:  {df['trajectory_id'].nunique()}")
-    logger.info(f"\nSpeed statistics (km/h):")
+    logger.info("\nSpeed statistics (km/h):")
     logger.info(f"  Mean:  {df['speed_kmh'].mean():.2f}")
     logger.info(f"  Std:   {df['speed_kmh'].std():.2f}")
     logger.info(f"  Max:   {df['speed_kmh'].max():.2f}")
-    logger.info(f"\nAcceleration statistics (m/s²):")
+    logger.info("\nAcceleration statistics (m/s²):")
     logger.info(f"  Mean:  {df['acceleration_ms2'].mean():.2f}")
     logger.info(f"  Std:   {df['acceleration_ms2'].std():.2f}")
-    logger.info(f"  Range: [{df['acceleration_ms2'].min():.2f}, {df['acceleration_ms2'].max():.2f}]")
+    logger.info(
+        f"  Range: [{df['acceleration_ms2'].min():.2f}, {df['acceleration_ms2'].max():.2f}]"
+    )
 
 
 def main():
@@ -129,11 +131,21 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Process Geolife GPS trajectory data")
-    parser.add_argument("--data-dir", type=Path, default=Path("data/geolife/Data"), help="Input data directory")
-    parser.add_argument("--output-dir", type=Path, default=Path("data/processed"), help="Output directory")
-    parser.add_argument("--max-speed", type=float, default=200.0, help="Maximum speed threshold (km/h)")
-    parser.add_argument("--max-accel", type=float, default=10.0, help="Maximum acceleration threshold (m/s²)")
-    parser.add_argument("--sample", type=int, help="Optional: process only N trajectory files (for testing)")
+    parser.add_argument(
+        "--data-dir", type=Path, default=Path("data/geolife/Data"), help="Input data directory"
+    )
+    parser.add_argument(
+        "--output-dir", type=Path, default=Path("data/processed"), help="Output directory"
+    )
+    parser.add_argument(
+        "--max-speed", type=float, default=200.0, help="Maximum speed threshold (km/h)"
+    )
+    parser.add_argument(
+        "--max-accel", type=float, default=10.0, help="Maximum acceleration threshold (m/s²)"
+    )
+    parser.add_argument(
+        "--sample", type=int, help="Optional: process only N trajectory files (for testing)"
+    )
 
     args = parser.parse_args()
 
@@ -148,4 +160,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

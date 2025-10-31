@@ -135,4 +135,3 @@ After running all notebooks, you'll generate:
 ## ✨ Ready to Go!
 
 The project is fully set up and ready for data analysis. Just install dependencies and download the data to get started!
-
