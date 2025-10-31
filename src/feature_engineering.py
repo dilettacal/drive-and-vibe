@@ -2,9 +2,10 @@
 Feature extraction for trip behavior analysis.
 """
 
-import pandas as pd
-import numpy as np
 import logging
+
+import numpy as np
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -44,8 +45,12 @@ def extract_trip_features(df: pd.DataFrame) -> pd.DataFrame:
         pct_stopped = stopped_count / len(group_df) * 100
 
         # Trip characteristics
-        trip_duration_min = group_df["duration_min"].iloc[0] if "duration_min" in group_df.columns else np.nan
-        trip_distance_km = group_df["distance_km"].iloc[0] if "distance_km" in group_df.columns else np.nan
+        trip_duration_min = (
+            group_df["duration_min"].iloc[0] if "duration_min" in group_df.columns else np.nan
+        )
+        trip_distance_km = (
+            group_df["distance_km"].iloc[0] if "distance_km" in group_df.columns else np.nan
+        )
 
         # Average speed (distance/time)
         if trip_duration_min > 0:
@@ -91,9 +96,7 @@ def extract_trip_features(df: pd.DataFrame) -> pd.DataFrame:
     return features_df
 
 
-def standardize_features(
-    df: pd.DataFrame, feature_cols: list[str] | None = None
-) -> pd.DataFrame:
+def standardize_features(df: pd.DataFrame, feature_cols: list[str] | None = None) -> pd.DataFrame:
     """
     Standardize features for clustering (z-score normalization).
 
@@ -107,7 +110,8 @@ def standardize_features(
     if feature_cols is None:
         # Exclude metadata columns
         exclude_cols = ["trajectory_id", "user_id"]
-        feature_cols = [col for col in df.select_dtypes(include=[np.number]).columns if col not in exclude_cols]
+        numeric_cols = df.select_dtypes(include=[np.number]).columns
+        feature_cols = [col for col in numeric_cols if col not in exclude_cols]
 
     df_scaled = df.copy()
 
@@ -157,7 +161,9 @@ def select_features_for_clustering(df: pd.DataFrame) -> list[str]:
     return available_features
 
 
-def filter_trips(df: pd.DataFrame, min_duration_min: float = 1.0, min_distance_km: float = 0.1) -> pd.DataFrame:
+def filter_trips(
+    df: pd.DataFrame, min_duration_min: float = 1.0, min_distance_km: float = 0.1
+) -> pd.DataFrame:
     """
     Filter out trips that are too short to be meaningful.
 
@@ -182,4 +188,3 @@ def filter_trips(df: pd.DataFrame, min_duration_min: float = 1.0, min_distance_k
     logger.info(f"Filtered {n_before - n_after} short trips")
 
     return df.reset_index(drop=True)
-

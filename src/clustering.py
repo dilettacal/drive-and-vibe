@@ -2,11 +2,12 @@
 Behavior clustering for classifying driving styles.
 """
 
-import pandas as pd
-import numpy as np
-from sklearn.cluster import KMeans, DBSCAN
-from sklearn.metrics import silhouette_score
 import logging
+
+import numpy as np
+import pandas as pd
+from sklearn.cluster import DBSCAN, KMeans
+from sklearn.metrics import silhouette_score
 
 logger = logging.getLogger(__name__)
 
@@ -30,18 +31,18 @@ def cluster_trips_kmeans(
         DataFrame with cluster labels added
     """
     # Select features
-    X = df[feature_cols].values
+    features = df[feature_cols].values
 
     # Fit KMeans
     kmeans = KMeans(n_clusters=n_clusters, random_state=random_state, n_init=10)
-    cluster_labels = kmeans.fit_predict(X)
+    cluster_labels = kmeans.fit_predict(features)
 
     # Add labels
     df_labeled = df.copy()
     df_labeled["cluster"] = cluster_labels
 
     # Calculate silhouette score
-    silhouette = silhouette_score(X, cluster_labels)
+    silhouette = silhouette_score(features, cluster_labels)
     logger.info(f"KMeans clustering: {n_clusters} clusters, silhouette score: {silhouette:.3f}")
 
     # Print cluster statistics
@@ -71,11 +72,11 @@ def cluster_trips_dbscan(
         DataFrame with cluster labels added (-1 for noise)
     """
     # Select features
-    X = df[feature_cols].values
+    features = df[feature_cols].values
 
     # Fit DBSCAN
     dbscan = DBSCAN(eps=eps, min_samples=min_samples)
-    cluster_labels = dbscan.fit_predict(X)
+    cluster_labels = dbscan.fit_predict(features)
 
     # Add labels
     df_labeled = df.copy()
@@ -229,4 +230,3 @@ def get_cluster_characteristics(df: pd.DataFrame) -> pd.DataFrame:
     cluster_characteristics = df.groupby("behavior_type")[numeric_cols].agg(["mean", "std"])
 
     return cluster_characteristics
-

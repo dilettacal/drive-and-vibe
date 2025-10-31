@@ -2,14 +2,13 @@
 Visualization utilities for trajectories and behavior analysis.
 """
 
-import pandas as pd
-import numpy as np
-import folium
-from folium.plugins import HeatMap, TimestampedGeoJson
-import matplotlib.pyplot as plt
-import seaborn as sns
-from pathlib import Path
 import logging
+from pathlib import Path
+
+import folium
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +59,7 @@ def plot_trajectory_map(
             max_val = values.max()
             # Define color palette for continuous values (red to green)
             from matplotlib.cm import RdYlGn
+
             cmap = RdYlGn
         else:
             color_by = None
@@ -103,7 +103,7 @@ def plot_trajectory_map(
         if show_events:
             for event_col in ["is_hard_brake", "is_sudden_accel", "is_sharp_turn"]:
                 if event_col in traj_df.columns:
-                    event_points = traj_df[traj_df[event_col] == True]
+                    event_points = traj_df[traj_df[event_col]]
                     for _, row in event_points.iterrows():
                         event_type = event_col.replace("is_", "").replace("_", " ").title()
                         folium.CircleMarker(
@@ -121,7 +121,9 @@ def plot_trajectory_map(
     return m
 
 
-def plot_speed_timeline(df: pd.DataFrame, trajectory_id: str, output_file: str | Path | None = None) -> None:
+def plot_speed_timeline(
+    df: pd.DataFrame, trajectory_id: str, output_file: str | Path | None = None
+) -> None:
     """
     Plot speed and acceleration timeline for a single trip.
 
@@ -144,7 +146,9 @@ def plot_speed_timeline(df: pd.DataFrame, trajectory_id: str, output_file: str |
     fig, axes = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
 
     # Plot speed
-    axes[0].plot(traj_df["timestamp"], traj_df["speed_kmh"], linewidth=2, color="blue", label="Speed")
+    axes[0].plot(
+        traj_df["timestamp"], traj_df["speed_kmh"], linewidth=2, color="blue", label="Speed"
+    )
     axes[0].axhline(y=0, color="black", linestyle="--", alpha=0.3)
     axes[0].set_ylabel("Speed (km/h)", fontsize=12)
     axes[0].set_title(f"Speed Timeline - {trajectory_id}", fontsize=14, fontweight="bold")
@@ -152,15 +156,35 @@ def plot_speed_timeline(df: pd.DataFrame, trajectory_id: str, output_file: str |
     axes[0].legend()
 
     # Plot acceleration
-    axes[1].plot(traj_df["timestamp"], traj_df["acceleration_ms2"], linewidth=2, color="red", label="Acceleration")
+    axes[1].plot(
+        traj_df["timestamp"],
+        traj_df["acceleration_ms2"],
+        linewidth=2,
+        color="red",
+        label="Acceleration",
+    )
     axes[1].axhline(y=0, color="black", linestyle="--", alpha=0.3)
     # Mark events
     if "is_hard_brake" in traj_df.columns:
-        brakes = traj_df[traj_df["is_hard_brake"] == True]
-        axes[1].scatter(brakes["timestamp"], brakes["acceleration_ms2"], color="red", s=100, label="Hard brake", marker="v")
+        brakes = traj_df[traj_df["is_hard_brake"]]
+        axes[1].scatter(
+            brakes["timestamp"],
+            brakes["acceleration_ms2"],
+            color="red",
+            s=100,
+            label="Hard brake",
+            marker="v",
+        )
     if "is_sudden_accel" in traj_df.columns:
-        accels = traj_df[traj_df["is_sudden_accel"] == True]
-        axes[1].scatter(accels["timestamp"], accels["acceleration_ms2"], color="green", s=100, label="Sudden accel", marker="^")
+        accels = traj_df[traj_df["is_sudden_accel"]]
+        axes[1].scatter(
+            accels["timestamp"],
+            accels["acceleration_ms2"],
+            color="green",
+            s=100,
+            label="Sudden accel",
+            marker="^",
+        )
 
     axes[1].set_xlabel("Time", fontsize=12)
     axes[1].set_ylabel("Acceleration (m/s²)", fontsize=12)
@@ -278,7 +302,9 @@ def plot_cluster_comparison(df: pd.DataFrame, output_file: str | Path | None = N
     plt.close()
 
 
-def create_dashboard(df_trajectories: pd.DataFrame, df_features: pd.DataFrame, output_file: str | Path) -> None:
+def create_dashboard(
+    df_trajectories: pd.DataFrame, df_features: pd.DataFrame, output_file: str | Path
+) -> None:
     """
     Create a combined dashboard with maps and statistics.
 
@@ -290,5 +316,6 @@ def create_dashboard(df_trajectories: pd.DataFrame, df_features: pd.DataFrame, o
     # This would create a comprehensive HTML dashboard
     # For now, just create a trajectory map
     logger.info("Creating dashboard (trajectory map)...")
-    plot_trajectory_map(df_trajectories, output_file=output_file, color_by="behavior_type", show_events=True)
-
+    plot_trajectory_map(
+        df_trajectories, output_file=output_file, color_by="behavior_type", show_events=True
+    )

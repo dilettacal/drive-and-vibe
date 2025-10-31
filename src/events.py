@@ -2,9 +2,9 @@
 Event detection for finding interesting driving events (hard braking, acceleration, etc.).
 """
 
-import pandas as pd
-import numpy as np
 import logging
+
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +73,7 @@ def detect_turns(df: pd.DataFrame, angle_threshold_deg: float = 30.0) -> pd.Data
     # Calculate heading from GPS points
     def calculate_bearing(lat1, lon1, lat2, lon2):
         """Calculate bearing between two GPS points."""
-        from math import radians, degrees, atan2, sin, cos
+        from math import atan2, cos, degrees, radians, sin
 
         lat1_rad = radians(lat1)
         lat2_rad = radians(lat2)
@@ -141,11 +141,8 @@ def detect_all_events(
 
     # Summary statistics per trip
     if "trajectory_id" in df.columns:
-        event_counts = df.groupby("trajectory_id")[
-            ["is_hard_brake", "is_sudden_accel", "is_stopped", "is_sharp_turn"]
-        ].sum()
-
-        logger.info(f"Event detection complete:")
+        # Log summary statistics
+        logger.info("Event detection complete:")
         logger.info(f"  Hard brakes: {df['is_hard_brake'].sum()}")
         logger.info(f"  Sudden accelerations: {df['is_sudden_accel'].sum()}")
         logger.info(f"  Stop events: {df['is_stopped'].sum()}")
@@ -184,4 +181,3 @@ def get_event_summary(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     return summary.reset_index()
-

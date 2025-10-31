@@ -2,11 +2,11 @@
 GPS utilities for parsing and validating Geolife trajectory data.
 """
 
-import pandas as pd
-import numpy as np
-from pathlib import Path
-from typing import Tuple, Optional
 import logging
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -125,11 +125,11 @@ def calculate_speed_acceleration(
 
     # Calculate distances (optimized with vectorization where possible)
     df["distance_m"] = 0.0
-    
+
     # Process in chunks to avoid memory issues
     chunk_size = 100000
     total_chunks = (len(df) + chunk_size - 1) // chunk_size
-    
+
     logger.info(f"Calculating distances for {len(df):,} points in {total_chunks} chunks...")
     for i in range(1, len(df)):
         if i % chunk_size == 0:
@@ -221,11 +221,13 @@ def compute_trip_duration_distance(df: pd.DataFrame) -> pd.DataFrame:
 
     result_dfs = []
     # Handle both DataFrameGroupBy objects and iterables
-    if hasattr(df_grouped, 'groups'):
+    if hasattr(df_grouped, "groups"):
         # DataFrameGroupBy object
         for name, group_df in df_grouped:
             group_df = group_df.sort_values("timestamp")
-            duration_sec = (group_df["timestamp"].max() - group_df["timestamp"].min()).total_seconds()
+            max_ts = group_df["timestamp"].max()
+            min_ts = group_df["timestamp"].min()
+            duration_sec = (max_ts - min_ts).total_seconds()
             distance_km = group_df["distance_m"].sum() / 1000
 
             group_df["duration_min"] = duration_sec / 60
@@ -236,7 +238,9 @@ def compute_trip_duration_distance(df: pd.DataFrame) -> pd.DataFrame:
         # Iterable of tuples
         for name, group_df in df_grouped:
             group_df = group_df.sort_values("timestamp")
-            duration_sec = (group_df["timestamp"].max() - group_df["timestamp"].min()).total_seconds()
+            max_ts = group_df["timestamp"].max()
+            min_ts = group_df["timestamp"].min()
+            duration_sec = (max_ts - min_ts).total_seconds()
             distance_km = group_df["distance_m"].sum() / 1000
 
             group_df["duration_min"] = duration_sec / 60
@@ -277,4 +281,3 @@ def clean_geolife_data(
 
     logger.info(f"Final dataset: {len(df)} points")
     return df
-
